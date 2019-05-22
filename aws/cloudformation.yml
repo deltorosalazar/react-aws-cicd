@@ -1,5 +1,9 @@
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
+  ApplicationName:
+    Type: String
+    Default: "Indigo"
+    Description: "Application Name"
   ProjectSource:
     Type: String
     Default: "https://github.com/deltorosalazar/react-aws-cicd"
@@ -15,9 +19,11 @@ Parameters:
     Description: "Github personal access token"
   BranchQA:
     Type: String
+    Default: "develop"
     Description: "Branch for QA Environment"  
   BranchProduction:
     Type: String
+    Default: "master"
     Description: "Branch for Production Environment"
 
 Resources:
@@ -33,7 +39,7 @@ Resources:
           Name: Source
           Actions: 
             - 
-              Name: SourceAction
+              Name: !Join [ "-", [ !Ref ApplicationName, !Ref BranchQA] ]
               ActionTypeId: 
                 Category: Source
                 Owner: ThirdParty
@@ -41,11 +47,11 @@ Resources:
                 Version: 1
               OutputArtifacts: 
                 - 
-                  Name: MyApp
+                  Name: !Join [ "-", [ !Ref ApplicationName, !Ref BranchQA] ]
               Configuration:
                 Owner: !Ref GithubOwner
                 Repo: !Ref GithubRepo
-                Branch: master
+                Branch: !Ref BranchQA
                 OAuthToken: !Ref GithubOAuthToken
         - 
           Name: Build
@@ -59,10 +65,10 @@ Resources:
                 Provider: CodeBuild
               InputArtifacts: 
                 - 
-                  Name: MyApp
+                  Name: !Join [ "-", [ !Ref ApplicationName, !Ref BranchQA] ]
               OutputArtifacts: 
                 - 
-                  Name: MyAppBuild
+                  Name: !Join [ "-", [ !Ref ApplicationName, !Ref BranchQA, "build"] ]
               Configuration:
                 ProjectName: !Ref CodeBuild
   CodeBuildRole:
